@@ -1,8 +1,9 @@
 
 import { useState, useEffect } from 'react';
 
-export default function Page() {
+export default function PublicDisplay() {
   const [data, setData] = useState(null);
+  const [countdown, setCountdown] = useState(60);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -12,8 +13,21 @@ export default function Page() {
     };
 
     fetchData();
-    const interval = setInterval(fetchData, 10000);
-    return () => clearInterval(interval);
+    const dataInterval = setInterval(fetchData, 10000);
+    const countdownInterval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          window.location.href = '/';
+          return 60;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      clearInterval(dataInterval);
+      clearInterval(countdownInterval);
+    };
   }, []);
 
   if (!data) {
@@ -58,8 +72,8 @@ export default function Page() {
       <h2 style={{ color: data.charging_state === 'Charging' ? 'green' : 'gray' }}>
         {data.charging_state === 'Charging' ? `充電中 (${data.charger_power} KW)` : '未充電'}
       </h2>
-      <p style={{ marginTop: '10px', fontSize: '0.9em', color: 'gray' }}>
-        實時監控中，最近更新時間：{new Date().toLocaleTimeString()}
+      <p style={{ marginTop: '10px', fontSize: '0.9em', color: 'red' }}>
+        {countdown} 秒後自動返回首頁
       </p>
     </div>
   );
